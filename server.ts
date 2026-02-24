@@ -283,9 +283,9 @@ async function startServer() {
     const sessionId = req.params.id;
     const sales = db.prepare("SELECT * FROM sales WHERE session_id = ?").all(sessionId);
     const movements = db.prepare(`
-      SELECT m.*, p.name as product_name 
+      SELECT m.*, COALESCE(p.name, 'Producto No Encontrado') as product_name 
       FROM movements m 
-      JOIN products p ON m.product_id = p.id 
+      LEFT JOIN products p ON m.product_id = p.id 
       WHERE m.session_id = ?
     `).all(sessionId);
     
@@ -296,9 +296,9 @@ async function startServer() {
     const session = getCurrentSession();
     const sales = db.prepare("SELECT * FROM sales WHERE session_id = ?").all(session.id);
     const movements = db.prepare(`
-      SELECT m.*, p.name as product_name 
+      SELECT m.*, COALESCE(p.name, 'Producto No Encontrado') as product_name 
       FROM movements m 
-      JOIN products p ON m.product_id = p.id 
+      LEFT JOIN products p ON m.product_id = p.id 
       WHERE m.session_id = ?
     `).all(session.id);
     
