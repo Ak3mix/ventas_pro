@@ -1,9 +1,20 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+// capacitor.config.ts
+import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.example.app',
-  appName: 'My App',
-  webDir: 'dist'
+  appId: 'com.tuapp.ejemplo',
+  appName: 'react-example',
+  webDir: 'dist',
+  bundledWebRuntime: false,
+  android: {
+    compileOptions: {
+      sourceCompatibility: 17,
+      targetCompatibility: 17
+    },
+    kotlinOptions: {
+      jvmTarget: '17'
+    }
+  }
 };
 
 export default config;
