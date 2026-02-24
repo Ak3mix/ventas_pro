@@ -17,6 +17,9 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as XLSX from 'xlsx';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+import { Capacitor } from '@capacitor/core';
 import { format } from 'date-fns';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -657,9 +660,31 @@ function ReportsTab({ products, onSessionClose }: { products: Product[], onSessi
       const ws = XLSX.utils.json_to_sheet(combinedData, { skipHeader: true });
       XLSX.utils.book_append_sheet(wb, ws, "Reporte Completo");
 
-      XLSX.writeFile(wb, `Reporte_VentasPro_Jornada_${sessionId}_${sessionDate}.xlsx`);
-    } catch (e) {
-      alert("Error al exportar Excel");
+      const fileName = `Reporte_VentasPro_Jornada_${sessionId}_${sessionDate}.xlsx`;
+
+      if (Capacitor.isNativePlatform()) {
+        // Native export flow
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+        
+        const result = await Filesystem.writeFile({
+          path: fileName,
+          data: wbout,
+          directory: Directory.Cache,
+        });
+
+        await Share.share({
+          title: 'Exportar Reporte Excel',
+          text: `Reporte de Jornada #${sessionId}`,
+          url: result.uri,
+          dialogTitle: 'Compartir Reporte',
+        });
+      } else {
+        // Web export flow
+        XLSX.writeFile(wb, fileName);
+      }
+    } catch (e: any) {
+      console.error("Excel export error:", e);
+      alert("Error al exportar Excel: " + (e.message || "Error desconocido"));
     }
   };
 
