@@ -7,9 +7,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Usar un GRADLE_USER_HOME seguro dentro del workspace
+      GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
 
     steps:
-      # 1️⃣ Checkout del repo
+      # 1️⃣ Checkout
       - uses: actions/checkout@v4
 
       # 2️⃣ Setup JDK 17
@@ -26,15 +29,15 @@ jobs:
           node-version: '22.x'
           check-latest: true
 
-      # 4️⃣ Instalar dependencias npm
+      # 4️⃣ Install npm dependencies
       - name: Install Dependencies
         run: npm ci
 
-      # 5️⃣ Build del web app
+      # 5️⃣ Build web app
       - name: Build Web App
         run: npm run build
 
-      # 6️⃣ Capacitor Sync
+      # 6️⃣ Capacitor sync
       - name: Capacitor Sync
         run: |
           if [ ! -d "android" ]; then
@@ -42,14 +45,16 @@ jobs:
           fi
           npx cap sync android
 
-      # 7️⃣ Build Android APK sin usar cache de Gradle
+      # 7️⃣ Build APK sin usar cache de Gradle global
       - name: Build Android APK
         run: |
           cd android
-          rm -rf gradle/wrapper/gradle-wrapper.jar
-          rm -rf ~/.gradle/caches/*  # 🔥 limpiar cache para evitar conflictos
+          # Limpiar wrapper antiguo
+          rm -f gradle/wrapper/gradle-wrapper.jar
+          # Regenerar wrapper compatible
           gradle wrapper --gradle-version 8.2
           chmod +x gradlew
+          # Compilar APK debug sin cache
           ./gradlew assembleDebug --no-build-cache
 
       # 8️⃣ Subir APK
