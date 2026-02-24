@@ -12,14 +12,14 @@ jobs:
       # 1️⃣ Checkout
       - uses: actions/checkout@v4
 
-      # 2️⃣ Set up JDK 17 (no más JDK 21)
+      # 2️⃣ Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3️⃣ Set up Node.js
+      # 3️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -33,7 +33,7 @@ jobs:
       - name: Build Web App
         run: npm run build
 
-      # 6️⃣ Remove old Android folder (opcional para limpio)
+      # 6️⃣ Remove old Android folder
       - name: Remove old Android folder
         run: |
           if [ -d "android" ]; then
@@ -46,7 +46,7 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      # 8️⃣ Build Android APK
+      # 8️⃣ Build APK
       - name: Build APK
         run: |
           cd android
