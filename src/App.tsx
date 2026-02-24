@@ -20,6 +20,7 @@ import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { api } from './services/api';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -150,24 +151,16 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
         controller.abort();
       }, 10000);
 
-      const res = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
+      const res = await api.addProduct(data);
 
-      console.log("handleAddProduct: Response received, status:", res.status);
-      if (res.ok) {
+      console.log("handleAddProduct: Response received");
+      if (res) {
         console.log("handleAddProduct: Success, closing modal and updating");
         setShowAddProduct(false);
         onUpdate();
         setTimeout(() => alert("¡Producto guardado con éxito!"), 100);
       } else {
-        const err = await res.json();
-        console.error("handleAddProduct: Server error:", err);
-        alert("Error del servidor: " + (err.error || "Desconocido"));
+        alert("Error al guardar el producto");
       }
     } catch (error: any) {
       console.error("handleAddProduct: Catch error:", error);
@@ -214,24 +207,16 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
         controller.abort();
       }, 10000);
 
-      const res = await fetch(`/api/products/${showEditProduct.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
+      const res = await api.updateProduct(showEditProduct.id, data);
 
-      console.log("handleEditProduct: Response received, status:", res.status);
-      if (res.ok) {
+      console.log("handleEditProduct: Response received");
+      if (res) {
         console.log("handleEditProduct: Success, closing modal and updating");
         setShowEditProduct(null);
         onUpdate();
         setTimeout(() => alert("¡Producto actualizado con éxito!"), 100);
       } else {
-        const err = await res.json();
-        console.error("handleEditProduct: Server error:", err);
-        alert("Error del servidor: " + (err.error || "Desconocido"));
+        alert("Error al actualizar el producto");
       }
     } catch (error: any) {
       console.error("handleEditProduct: Catch error:", error);
@@ -250,15 +235,12 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
     if (!showDeleteConfirm || isDeleting) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/products/${showDeleteConfirm.id}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
+      const res = await api.deleteProduct(showDeleteConfirm.id);
+      if (res) {
         setShowDeleteConfirm(null);
         onUpdate();
       } else {
-        const data = await res.json();
-        alert(`Error: ${data.error || 'No se pudo eliminar el producto'}`);
+        alert("No se pudo eliminar el producto");
       }
     } catch (error) {
       alert("Error de conexión al eliminar producto");
@@ -270,24 +252,19 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
   const handleMove = async () => {
     if (!showMoveModal) return;
     try {
-      const res = await fetch('/api/inventory/move', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          product_id: showMoveModal.id,
-          type: moveType,
-          quantity: moveQty,
-          reason: moveReason || (moveType === 'entry' ? 'Reabastecimiento' : 'Merma')
-        })
+      const res = await api.moveInventory({
+        product_id: showMoveModal.id,
+        type: moveType,
+        quantity: moveQty,
+        reason: moveReason || (moveType === 'entry' ? 'Reabastecimiento' : 'Merma')
       });
-      const data = await res.json();
-      if (res.ok) {
+      if (res) {
         setShowMoveModal(null);
         setMoveQty(1);
         setMoveReason('');
         onUpdate();
       } else {
-        alert(data.error || "Error en el movimiento");
+        alert("Error en el movimiento");
       }
     } catch (error) {
       alert("Error de conexión");
@@ -564,8 +541,7 @@ function ReportsTab({ products, onSessionClose }: { products: Product[], onSessi
 
   const fetchReport = async () => {
     try {
-      const res = await fetch('/api/reports/current');
-      const data = await res.json();
+      const data = await api.getCurrentReport();
       setReportData(data);
     } catch (e) {
       console.error("Error fetching report", e);
@@ -574,8 +550,7 @@ function ReportsTab({ products, onSessionClose }: { products: Product[], onSessi
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch('/api/sessions/history');
-      const data = await res.json();
+      const data = await api.getSessionHistory();
       setHistory(data);
     } catch (e) {
       console.error("Error fetching history", e);
@@ -591,15 +566,14 @@ function ReportsTab({ products, onSessionClose }: { products: Product[], onSessi
     setShowConfirmClose(false);
     setIsClosing(true);
     try {
-      const res = await fetch('/api/sessions/close', { method: 'POST' });
-      if (res.ok) {
+      const res = await api.closeSession();
+      if (res) {
         await fetchReport();
         await fetchHistory();
         onSessionClose();
         alert("Jornada cerrada correctamente. Se ha iniciado una nueva.");
       } else {
-        const data = await res.json();
-        alert(`Error: ${data.error || 'No se pudo cerrar la jornada'}`);
+        alert("No se pudo cerrar la jornada");
       }
     } catch (error) {
       alert("Error de conexión");
@@ -610,8 +584,7 @@ function ReportsTab({ products, onSessionClose }: { products: Product[], onSessi
 
   const exportSessionExcel = async (sessionId: number, sessionDate: string) => {
     try {
-      const res = await fetch(`/api/reports/session/${sessionId}`);
-      const data = await res.json();
+      const data = await api.getSessionReport(sessionId);
       
       const totals = data.sales.reduce((acc: any, s: any) => {
         if (s.payment_method === 'cash') acc.cash += s.total;
@@ -820,17 +793,15 @@ export default function App() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('/api/products');
-      const data = await res.json();
+      const data = await api.getProducts();
       setProducts(data);
     } catch (e) { console.error(e); }
   };
 
   const fetchSession = async () => {
     try {
-      const res = await fetch('/api/sessions/current');
-      const data = await res.json();
-      setCurrentSession(data);
+      const data = await api.getCurrentReport();
+      setCurrentSession(data.session);
     } catch (e) { console.error(e); }
   };
 
@@ -871,24 +842,19 @@ export default function App() {
     if (!paymentMethod) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/sales', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: cart,
-          payment_method: paymentMethod,
-          total: cartTotal
-        })
+      const res = await api.createSale({
+        items: cart,
+        payment_method: paymentMethod,
+        total: cartTotal
       });
-      const data = await res.json();
-      if (res.ok) {
+      if (res) {
         setCart([]);
         setShowPaymentModal(false);
         setPaymentMethod(null);
         await fetchProducts();
         alert("¡Venta realizada con éxito!");
       } else {
-        alert(`Error: ${data.error || 'Desconocido'}`);
+        alert("Error al procesar la venta");
       }
     } catch (error) {
       alert("Error de conexión");
@@ -898,8 +864,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-100 font-sans text-stone-900 pb-24">
-      <header className="bg-white border-b border-stone-200 p-4 sticky top-0 z-30 shadow-sm">
+    <div className="min-h-screen bg-stone-100 font-sans text-stone-900 pb-safe">
+      <header className="bg-white border-b border-stone-200 p-4 pt-safe sticky top-0 z-30 shadow-sm">
         <div className="max-w-md mx-auto flex justify-between items-center">
           <h1 className="text-xl font-bold tracking-tight text-stone-800">VentasPro</h1>
           <div className="flex items-center gap-2">
@@ -975,7 +941,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-2 pb-6 flex justify-around items-center z-40">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-2 pb-safe flex justify-around items-center z-40">
         <NavButton active={activeTab === 'vender'} onClick={() => setActiveTab('vender')} icon={<ShoppingCart size={20} />} label="Vender" />
         <NavButton active={activeTab === 'inventario'} onClick={() => setActiveTab('inventario')} icon={<Package size={20} />} label="Inventario" />
         <NavButton active={activeTab === 'reportes'} onClick={() => setActiveTab('reportes')} icon={<ClipboardList size={20} />} label="Cierre" />
@@ -988,7 +954,7 @@ export default function App() {
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
-            className="fixed bottom-[84px] left-0 right-0 p-4 z-30 pointer-events-none"
+            className="fixed bottom-[calc(64px+env(safe-area-inset-bottom))] left-0 right-0 p-4 z-30 pointer-events-none"
           >
             <div className="max-w-md mx-auto pointer-events-auto">
               <button 
