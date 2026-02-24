@@ -611,10 +611,10 @@ function ReportsTab({ products, onSessionClose }: { products: Product[], onSessi
       const productInfo = data.movements.reduce((acc: any, m: any) => {
         if (!acc[m.product_id]) {
           acc[m.product_id] = {
-            name: m.product_name,
+            name: m.product_name || 'Producto Desconocido',
             sold: 0,
-            price: 0, // We'll try to find this from sales or current products if possible
-            stock: 0  // This is tricky for historical reports, maybe just show '-' or current stock
+            price: 0,
+            stock: 0
           };
         }
         if (m.type === 'sale') {
@@ -649,7 +649,7 @@ function ReportsTab({ products, onSessionClose }: { products: Product[], onSessi
         .filter((m: any) => m.type === 'waste')
         .forEach((m: any) => {
           combinedData.push({
-            'Col1': m.product_name,
+            'Col1': m.product_name || 'Producto Desconocido',
             'Col2': m.quantity,
             'Col3': m.reason,
             'Col4': format(new Date(m.timestamp), 'dd/MM/yyyy HH:mm')
