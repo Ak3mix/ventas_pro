@@ -46,8 +46,15 @@ jobs:
       - name: Build Android APK
         run: |
           cd android
+
+          # 🔥 Eliminar wrapper corrupto
+          rm -f gradle/wrapper/gradle-wrapper.jar
+
+          # Usar Gradle instalado por setup-gradle
+          gradle wrapper --gradle-version 8.10.2
+
+          # Ahora sí, usar el wrapper limpio
           chmod +x gradlew
-          ./gradlew wrapper --gradle-version 8.10.2
           ./gradlew assembleDebug
 
       - name: Upload APK
