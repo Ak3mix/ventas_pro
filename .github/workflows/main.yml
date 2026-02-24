@@ -7,12 +7,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # 🔑 Evita errores de cache y permisos en GitHub Actions
+      GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
 
     steps:
       # 1️⃣ Checkout del repo
       - uses: actions/checkout@v4
 
-      # 2️⃣ Setup JDK 17 (obligatorio para Capacitor 8.1 + AGP 8.1)
+      # 2️⃣ Setup JDK 17 (compatible con AGP 8.1 + Capacitor 8.1)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -28,14 +31,14 @@ jobs:
           check-latest: true
           cache: 'npm'
 
-      # 4️⃣ Setup Gradle 8.2 (compatible con AGP 8.1)
+      # 4️⃣ Setup Gradle 8.2
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.2
           validate-wrappers: false
 
-      # 5️⃣ Ver versión de Node (opcional)
+      # 5️⃣ Check Node version (opcional)
       - name: Check Node Version
         run: node -v
 
