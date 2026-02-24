@@ -3,7 +3,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.tuapp.ejemplo',
-  appName: 'react-example',
+  appName: 'VentasPro',
   webDir: 'dist',
   bundledWebRuntime: false,
   android: {
