@@ -38,7 +38,7 @@ jobs:
       # Cambiar el nombre de la app dinámicamente
       - name: Change App Name
         run: |
-          sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Mi App de Ventas<\/string>/g' android/app/src/main/res/values/strings.xml
+          sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Ventas Lee<\/string>/g' android/app/src/main/res/values/strings.xml
 
       # Permisos para Filesystem (necesarios para manejar archivos Excel)
       - name: Add Permissions
