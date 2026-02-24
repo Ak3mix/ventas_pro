@@ -8,21 +8,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # 🔒 Cache temporal seguro para evitar errores de jars corruptos
-      GRADLE_USER_HOME: ${{ runner.temp }}/gradle
+      # 🔒 Cache seguro dentro del workspace
+      GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
 
     steps:
-      # 1️⃣ Checkout del repo
       - uses: actions/checkout@v4
 
-      # 2️⃣ Setup JDK 17 (compatible con AGP 8.1 + Capacitor 8.1)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -30,22 +27,18 @@ jobs:
           check-latest: true
           cache: 'npm'
 
-      # 4️⃣ Setup Gradle 8.2 (compatible con AGP 8.1)
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.2
           validate-wrappers: false
 
-      # 5️⃣ Instalar dependencias npm
       - name: Install Dependencies
         run: npm ci
 
-      # 6️⃣ Build del web app (Vite)
       - name: Build Web App
         run: npm run build
 
-      # 7️⃣ Capacitor Sync (agrega Android si no existe)
       - name: Capacitor Sync
         run: |
           if [ ! -d "android" ]; then
@@ -53,24 +46,14 @@ jobs:
           fi
           npx cap sync android
 
-      # 8️⃣ Build Android APK
       - name: Build Android APK
         run: |
           cd android
-
-          # 🔥 Eliminar wrapper corrupto si existe
           rm -f gradle/wrapper/gradle-wrapper.jar
-
-          # 🔧 Regenerar wrapper compatible
           gradle wrapper --gradle-version 8.2
-
-          # Dar permisos de ejecución
           chmod +x gradlew
-
-          # Compilar APK debug
           ./gradlew assembleDebug
 
-      # 9️⃣ Subir APK como artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
