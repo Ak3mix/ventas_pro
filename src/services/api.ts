@@ -96,7 +96,13 @@ export const api = {
       
       const session = localDB.getCurrentSession();
       const movements = localDB.get('movements');
-      movements.push({ ...move, id: Date.now(), session_id: session.id, timestamp: new Date().toISOString() });
+      movements.push({ 
+        ...move, 
+        product_name: product.name,
+        id: Date.now(), 
+        session_id: session.id, 
+        timestamp: new Date().toISOString() 
+      });
       localDB.set('movements', movements);
     }
     return { success: true };
