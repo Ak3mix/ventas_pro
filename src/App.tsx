@@ -995,6 +995,7 @@ export default function App() {
                         </div>
                       </button>
                     ))}
+                </div>
               </div>
 
               {/* Empty state */}
@@ -1008,11 +1009,25 @@ export default function App() {
           )}
 
           {activeTab === 'inventario' && (
-            <InventoryTab products={products} onUpdate={fetchProducts} />
+            <motion.div
+              key="inventario"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <InventoryTab products={products} onUpdate={fetchProducts} />
+            </motion.div>
           )}
 
           {activeTab === 'reportes' && (
-            <ReportsTab products={products} onSessionClose={() => { fetchSession(); fetchProducts(); }} />
+            <motion.div
+              key="reportes"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <ReportsTab products={products} onSessionClose={() => { fetchSession(); fetchProducts(); }} />
+            </motion.div>
           )}
         </AnimatePresence>
       </main>
