@@ -36,6 +36,7 @@ interface Product {
   price: number;
   stock: number;
   initial_stock: number;
+  category: string;
 }
 
 interface CartItem extends Product {
@@ -103,16 +104,19 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
   const [formName, setFormName] = useState('');
   const [formPrice, setFormPrice] = useState('');
   const [formStock, setFormStock] = useState('');
+  const [formCategory, setFormCategory] = useState('');
 
   useEffect(() => {
     if (showEditProduct) {
       setFormName(showEditProduct.name);
       setFormPrice(showEditProduct.price.toString());
       setFormStock(showEditProduct.stock.toString());
+      setFormCategory(showEditProduct.category || '');
     } else if (showAddProduct) {
       setFormName('');
       setFormPrice('');
       setFormStock('');
+      setFormCategory('');
     }
   }, [showEditProduct, showAddProduct]);
 
@@ -142,7 +146,8 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
     const data = {
       name: formName.trim(),
       price,
-      initial_stock: stock
+      initial_stock: stock,
+      category: formCategory.trim()
     };
 
     console.log("handleAddProduct: Sending data:", data);
@@ -198,7 +203,8 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
     const data = {
       name: formName.trim(),
       price,
-      stock
+      stock,
+      category: formCategory.trim()
     };
 
     console.log("handleEditProduct: Sending data to /api/products/" + showEditProduct.id, data);
@@ -354,6 +360,15 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
                       className="w-full bg-stone-50 border-none rounded-xl p-3 focus:ring-2 ring-stone-900 font-bold" 
                     />
                   </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 mb-1 block">Categoría</label>
+                    <input 
+                      value={formCategory}
+                      onChange={e => setFormCategory(e.target.value)}
+                      placeholder="Ej: Bebidas, Snacks, etc."
+                      className="w-full bg-stone-50 border-none rounded-xl p-3 focus:ring-2 ring-stone-900" 
+                    />
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-[10px] uppercase font-bold text-stone-400 mb-1 block">Precio</label>
@@ -407,6 +422,15 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
                       onChange={e => setFormName(e.target.value)}
                       required 
                       className="w-full bg-stone-50 border-none rounded-xl p-3 focus:ring-2 ring-stone-900 font-bold" 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 mb-1 block">Categoría</label>
+                    <input 
+                      value={formCategory}
+                      onChange={e => setFormCategory(e.target.value)}
+                      placeholder="Ej: Bebidas, Snacks, etc."
+                      className="w-full bg-stone-50 border-none rounded-xl p-3 focus:ring-2 ring-stone-900" 
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -815,6 +839,9 @@ export default function App() {
   const [showCartModal, setShowCartModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer' | null>(null);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  const categories = ['all', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
 
   const fetchProducts = async () => {
     try {
@@ -915,35 +942,59 @@ export default function App() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-6"
             >
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {products.map(product => (
-                  <button
-                    key={product.id}
-                    onClick={() => addToCart(product)}
-                    disabled={product.stock <= 0}
-                    className={cn(
-                      "p-3 sm:p-4 rounded-3xl border text-left transition-all active:scale-95 flex flex-col justify-between min-h-[120px]",
-                      product.stock > 0 
-                        ? "bg-white border-stone-200 shadow-sm hover:border-emerald-200" 
-                        : "bg-stone-50 border-stone-100 opacity-60 grayscale"
-                    )}
-                  >
-                    <div>
-                      <div className="font-black text-stone-900 text-sm leading-tight mb-1 line-clamp-2">{product.name}</div>
-                      <div className="text-emerald-600 font-black text-base">${product.price.toFixed(2)}</div>
-                    </div>
-                    <div className="flex justify-between items-center mt-2">
-                      <div className="text-[8px] uppercase font-black text-stone-400">
-                        Stock: {product.stock}
-                      </div>
-                      {product.stock <= 5 && product.stock > 0 && (
-                        <div className="bg-amber-500 text-white text-[7px] font-black px-1 py-0.5 rounded-full uppercase">
-                          Low
-                        </div>
+              <div className="space-y-4">
+                {/* Category Filter */}
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {categories.map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={cn(
+                        "px-4 py-2 rounded-full text-xs font-black uppercase whitespace-nowrap transition-all",
+                        selectedCategory === cat 
+                          ? "bg-stone-900 text-white" 
+                          : "bg-white text-stone-500 border border-stone-200"
                       )}
-                    </div>
-                  </button>
-                ))}
+                    >
+                      {cat === 'all' ? 'Todos' : cat}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {products
+                    .filter(p => selectedCategory === 'all' || p.category === selectedCategory)
+                    .map(product => (
+                      <button
+                        key={product.id}
+                        onClick={() => addToCart(product)}
+                        disabled={product.stock <= 0}
+                        className={cn(
+                          "p-3 sm:p-4 rounded-3xl border text-left transition-all active:scale-95 flex flex-col justify-between min-h-[120px]",
+                          product.stock > 0 
+                            ? "bg-white border-stone-200 shadow-sm hover:border-emerald-200" 
+                            : "bg-stone-50 border-stone-100 opacity-60 grayscale"
+                        )}
+                      >
+                        <div>
+                          <div className="font-black text-stone-900 text-sm leading-tight mb-1 line-clamp-2">{product.name}</div>
+                          <div className="text-emerald-600 font-black text-base">${product.price.toFixed(2)}</div>
+                          {product.category && (
+                            <div className="text-[8px] uppercase font-bold text-stone-400 mt-1">{product.category}</div>
+                          )}
+                        </div>
+                        <div className="flex justify-between items-center mt-2">
+                          <div className="text-[8px] uppercase font-black text-stone-400">
+                            Stock: {product.stock}
+                          </div>
+                          {product.stock <= 5 && product.stock > 0 && (
+                            <div className="bg-amber-500 text-white text-[7px] font-black px-1 py-0.5 rounded-full uppercase">
+                              Low
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    ))}
               </div>
 
               {/* Empty state */}
