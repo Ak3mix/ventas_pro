@@ -74,6 +74,12 @@ if (!tableInfo.some(col => col.name === 'image')) {
   db.exec("ALTER TABLE products ADD COLUMN image TEXT;");
 }
 
+// Add category column if not exists
+if (!tableInfo.some(col => col.name === 'category')) {
+  console.log("Adding category column to products table...");
+  db.exec("ALTER TABLE products ADD COLUMN category TEXT;");
+}
+
 // Helper to get or create current session
 function getCurrentSession() {
   try {
@@ -153,10 +159,10 @@ async function startServer() {
 
   app.post("/api/products", (req, res) => {
     try {
-      const { name, price, initial_stock } = req.body;
-      console.log(`Creating product: ${name}, price: ${price}, stock: ${initial_stock}`);
-      const info = db.prepare("INSERT INTO products (name, price, stock, initial_stock) VALUES (?, ?, ?, ?)")
-        .run(name, price, initial_stock, initial_stock);
+      const { name, price, initial_stock, category } = req.body;
+      console.log(`Creating product: ${name}, price: ${price}, stock: ${initial_stock}, category: ${category}`);
+      const info = db.prepare("INSERT INTO products (name, price, stock, initial_stock, category) VALUES (?, ?, ?, ?, ?)")
+        .run(name, price, initial_stock, initial_stock, category || '');
       res.json({ id: info.lastInsertRowid });
     } catch (e) {
       console.error("Create product error:", e);
@@ -170,11 +176,11 @@ async function startServer() {
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid product ID" });
       }
-      const { name, price, stock } = req.body;
-      console.log(`Updating product ID ${id}: ${name}, price: ${price}, stock: ${stock}`);
+      const { name, price, stock, category } = req.body;
+      console.log(`Updating product ID ${id}: ${name}, price: ${price}, stock: ${stock}, category: ${category}`);
       
-      const result = db.prepare("UPDATE products SET name = ?, price = ?, stock = ? WHERE id = ?")
-        .run(name, price, stock, id);
+      const result = db.prepare("UPDATE products SET name = ?, price = ?, stock = ?, category = ? WHERE id = ?")
+        .run(name, price, stock, category || '', id);
       
       console.log(`Update result: ${JSON.stringify(result)}`);
       res.json({ success: true, changes: result.changes });
