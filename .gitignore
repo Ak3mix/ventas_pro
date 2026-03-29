@@ -1,3 +1,41 @@
 ```
+# Build artifacts
+*.apk
+*.aab
+*.so
+*.aar
+build/
+app/build/
+
+# Dependencies
 node_modules/
+vendor/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+*.iml
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Java/Android specific
+*.class
+*.jar
+*.war
+*.ear
+target/
+.gradle/
+local.properties
 ```
