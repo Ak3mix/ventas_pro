@@ -13,7 +13,8 @@ import {
   Trash2,
   DollarSign,
   CreditCard,
-  Edit
+  Edit,
+  Search
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as XLSX from 'xlsx';
@@ -89,6 +90,29 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
   );
 }
 
+function InventoryCategoryFilter({ products, selectedCategory, onSelectCategory }: { products: Product[], selectedCategory: string, onSelectCategory: (cat: string) => void }) {
+  const categories = ['all', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
+  
+  return (
+    <div className="flex gap-2 overflow-x-auto pb-2">
+      {categories.map(cat => (
+        <button
+          key={cat}
+          onClick={() => onSelectCategory(cat)}
+          className={cn(
+            "px-4 py-2 rounded-full text-xs font-black uppercase whitespace-nowrap transition-all",
+            selectedCategory === cat 
+              ? "bg-stone-900 text-white" 
+              : "bg-white text-stone-500 border border-stone-200"
+          )}
+        >
+          {cat === 'all' ? 'Todos' : cat}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: () => void }) {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showEditProduct, setShowEditProduct] = useState<Product | null>(null);
@@ -99,6 +123,7 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
   const [moveType, setMoveType] = useState<'entry' | 'waste'>('entry');
   const [moveQty, setMoveQty] = useState(1);
   const [moveReason, setMoveReason] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   // Form states
   const [formName, setFormName] = useState('');
@@ -292,8 +317,18 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
         </button>
       </div>
 
+      {/* Category filter for inventory */}
+      <InventoryCategoryFilter 
+        products={products} 
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
+
       <div className="space-y-3">
-        {products.map(product => (
+        {products
+          .filter(p => selectedCategory === 'all' || p.category === selectedCategory)
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(product => (
           <div key={product.id} className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1">
               <div className="flex-1">
@@ -840,8 +875,15 @@ export default function App() {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer' | null>(null);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const categories = ['all', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
+
+  // Filter and sort products for display
+  const filteredProducts = products
+    .filter(p => selectedCategory === 'all' || p.category === selectedCategory)
+    .filter(p => searchTerm === '' || p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const fetchProducts = async () => {
     try {
@@ -943,6 +985,18 @@ export default function App() {
               className="space-y-6"
             >
               <div className="space-y-4">
+                {/* Search Bar */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Buscar producto..."
+                    className="w-full bg-white border border-stone-200 rounded-xl p-3 pl-10 focus:ring-2 ring-emerald-500 font-medium"
+                  />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                </div>
+
                 {/* Category Filter */}
                 <div className="flex gap-2 overflow-x-auto pb-2">
                   {categories.map(cat => (
@@ -962,9 +1016,7 @@ export default function App() {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {products
-                    .filter(p => selectedCategory === 'all' || p.category === selectedCategory)
-                    .map(product => (
+                  {filteredProducts.map(product => (
                       <button
                         key={product.id}
                         onClick={() => addToCart(product)}
@@ -999,7 +1051,12 @@ export default function App() {
               </div>
 
               {/* Empty state */}
-              {products.length === 0 && (
+              {filteredProducts.length === 0 && (searchTerm || selectedCategory !== 'all') ? (
+                <div className="text-center py-20 text-stone-400">
+                  <Package className="mx-auto mb-4 opacity-20" size={48} />
+                  <p className="font-medium">No se encontraron productos con estos filtros</p>
+                </div>
+              ) : products.length === 0 && (
                 <div className="text-center py-20 text-stone-400">
                   <Package className="mx-auto mb-4 opacity-20" size={48} />
                   <p className="font-medium">No hay productos registrados</p>
