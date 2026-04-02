@@ -21,6 +21,7 @@ try {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       price REAL NOT NULL,
+      cost REAL DEFAULT 0,
       stock INTEGER DEFAULT 0,
       initial_stock INTEGER DEFAULT 0,
       deleted INTEGER DEFAULT 0,
