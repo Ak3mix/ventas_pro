@@ -693,10 +693,14 @@ function ReportsTab({ products, onSessionClose }: { products: Product[], onSessi
         }
       });
 
+      let totalNetProfit = 0;
       Object.values(productInfo).forEach((p: any) => {
         const subtotal = p.price ? p.sold * p.price : 0;
         const totalCost = p.cost ? p.sold * p.cost : 0;
         const netProfit = subtotal - totalCost;
+        if (netProfit > 0) {
+          totalNetProfit += netProfit;
+        }
         combinedData.push({
           'Col1': p.name,
           'Col2': p.sold,
@@ -709,6 +713,8 @@ function ReportsTab({ products, onSessionClose }: { products: Product[], onSessi
         });
       });
 
+      combinedData.push({ 'Col1': '', 'Col2': '' }); // Separator
+      combinedData.push({ 'Col1': 'GANANCIA NETA TOTAL', 'Col2': totalNetProfit.toFixed(2) });
       combinedData.push({ 'Col1': '', 'Col2': '' }); // Separator
       combinedData.push({ 'Col1': 'DETALLE DE MERMAS Y BAJAS', 'Col2': '' });
       combinedData.push({ 'Col1': 'Producto', 'Col2': 'Cant. Perdida', 'Col3': 'Motivo', 'Col4': 'Fecha/Hora' });
@@ -1048,7 +1054,7 @@ export default function App() {
                           <div className="text-[8px] uppercase font-black text-stone-400">
                             Stock: {product.stock}
                           </div>
-                          {product.stock <= 5 && product.stock > 0 && (
+                          {product.stock <= 2 && product.stock > 0 && (
                             <div className="bg-amber-500 text-white text-[7px] font-black px-1 py-0.5 rounded-full uppercase">
                               Low
                             </div>
