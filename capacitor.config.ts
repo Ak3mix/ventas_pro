@@ -14,6 +14,16 @@ const config: CapacitorConfig = {
     kotlinOptions: {
       jvmTarget: '17'
     }
+  },
+  plugins: {
+    StatusBar: {
+      style: 'DARK',
+      overlaysWebView: false
+    },
+    NavigationBar: {
+      style: 'LIGHT',
+      overridesWebView: false
+    }
   }
 };
 

@@ -281,12 +281,12 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-black text-stone-900">Inventario</h2>
         <button 
           onClick={() => { setShowAddProduct(true); }}
-          className="bg-stone-900 text-white p-2 rounded-xl shadow-lg active:scale-95 transition-transform"
+          className="bg-stone-900 text-white p-2 rounded-xl shadow-lg active:scale-95 transition-transform shrink-0"
         >
           <Plus size={20} />
         </button>
@@ -296,10 +296,10 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
         {products
           .sort((a, b) => a.name.localeCompare(b.name))
           .map(product => (
-          <div key={product.id} className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div key={product.id} className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col gap-4">
             <div className="flex items-center gap-4 flex-1">
-              <div className="flex-1">
-                <div className="font-black text-stone-900 text-lg leading-tight">{product.name}</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-black text-stone-900 text-lg leading-tight truncate">{product.name}</div>
                 <div className="text-xs text-stone-400 mt-1">
                   {product.category && (
                     <span className="inline-block bg-stone-100 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold mr-2">{product.category}</span>
@@ -309,34 +309,34 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
                 </div>
               </div>
             </div>
-            <div className="flex gap-2 sm:gap-1.5 justify-end">
+            <div className="flex gap-2 justify-end">
               <button 
                 onClick={() => { setShowMoveModal(product); setMoveType('entry'); }}
-                className="bg-blue-50 text-blue-600 p-2.5 sm:p-2 rounded-xl hover:bg-blue-100 transition-colors flex-1 sm:flex-none flex justify-center"
+                className="bg-blue-50 text-blue-600 p-2.5 rounded-xl hover:bg-blue-100 transition-colors flex-1 flex justify-center shrink-0"
                 title="Reabastecer"
               >
-                <ArrowUpCircle size={20} className="sm:w-[18px] sm:h-[18px]" />
+                <ArrowUpCircle size={20} />
               </button>
               <button 
                 onClick={() => { setShowMoveModal(product); setMoveType('waste'); }}
-                className="bg-rose-50 text-rose-600 p-2.5 sm:p-2 rounded-xl hover:bg-rose-100 transition-colors flex-1 sm:flex-none flex justify-center"
+                className="bg-rose-50 text-rose-600 p-2.5 rounded-xl hover:bg-rose-100 transition-colors flex-1 flex justify-center shrink-0"
                 title="Merma"
               >
-                <ArrowDownCircle size={20} className="sm:w-[18px] sm:h-[18px]" />
+                <ArrowDownCircle size={20} />
               </button>
               <button 
                 onClick={() => { setShowEditProduct(product); }}
-                className="bg-stone-50 text-stone-600 p-2.5 sm:p-2 rounded-xl hover:bg-stone-100 transition-colors flex-1 sm:flex-none flex justify-center"
+                className="bg-stone-50 text-stone-600 p-2.5 rounded-xl hover:bg-stone-100 transition-colors flex-1 flex justify-center shrink-0"
                 title="Editar"
               >
-                <Edit size={20} className="sm:w-[18px] sm:h-[18px]" />
+                <Edit size={20} />
               </button>
               <button 
                 onClick={() => setShowDeleteConfirm(product)}
-                className="bg-stone-50 text-rose-400 p-2.5 sm:p-2 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-colors flex-1 sm:flex-none flex justify-center"
+                className="bg-stone-50 text-rose-400 p-2.5 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-colors flex-1 flex justify-center shrink-0"
                 title="Eliminar"
               >
-                <Trash2 size={20} className="sm:w-[18px] sm:h-[18px]" />
+                <Trash2 size={20} />
               </button>
             </div>
           </div>
@@ -922,9 +922,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-100 font-sans text-stone-900 pb-safe">
+    <div className="min-h-screen min-h-[100dvh] bg-stone-100 font-sans text-stone-900 pb-safe">
       <header className="bg-white border-b border-stone-200 p-4 pt-safe sticky top-0 z-30 shadow-sm">
-        <div className="max-w-md mx-auto flex justify-between items-center">
+        <div className="w-full max-w-md mx-auto flex justify-between items-center">
           <h1 className="text-xl font-bold tracking-tight text-stone-800">VentasPro</h1>
           <div className="flex items-center gap-2">
             <div className={cn(
@@ -938,7 +938,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-md mx-auto p-4">
+      <main className="w-full max-w-md mx-auto p-4 pb-24">
         <AnimatePresence mode="wait">
           {activeTab === 'vender' && (
             <motion.div
@@ -964,13 +964,13 @@ export default function App() {
                 </div>
 
                 {/* Category Filter */}
-                <div className="flex gap-2 overflow-x-auto pb-2">
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
                   {categories.map(cat => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
                       className={cn(
-                        "px-4 py-2 rounded-full text-xs font-black uppercase whitespace-nowrap transition-all",
+                        "px-4 py-2 rounded-full text-xs font-black uppercase whitespace-nowrap transition-all shrink-0",
                         selectedCategory === cat 
                           ? "bg-stone-900 text-white" 
                           : "bg-white text-stone-500 border border-stone-200"
@@ -1095,7 +1095,7 @@ export default function App() {
               initial={{ y: "100%" }} 
               animate={{ y: 0 }} 
               exit={{ y: "100%" }} 
-              className="bg-white w-full max-w-md rounded-t-[40px] p-6 pb-8 shadow-2xl max-h-[90vh] flex flex-col"
+              className="bg-white w-full max-w-md rounded-t-[40px] p-6 pb-8 shadow-2xl max-h-[90vh] max-h-[90dvh] flex flex-col"
             >
               <div className="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-6 shrink-0" />
               <div className="flex justify-between items-center mb-6 shrink-0">
