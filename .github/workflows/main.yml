@@ -23,8 +23,10 @@ jobs:
           node-version: '22.x'
 
       # Usamos install para asegurar que los nuevos plugins se descarguen
-      - name: Install Dependencies
-        run: npm install
+      - name: Clean and Install Dependencies
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
 
       - name: Build Web App
         run: npm run build
