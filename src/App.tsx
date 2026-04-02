@@ -293,12 +293,17 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
       </div>
 
       <div className="space-y-3">
-        {products.map(product => (
+        {products
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(product => (
           <div key={product.id} className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1">
               <div className="flex-1">
                 <div className="font-black text-stone-900 text-lg leading-tight">{product.name}</div>
                 <div className="text-xs text-stone-400 mt-1">
+                  {product.category && (
+                    <span className="inline-block bg-stone-100 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold mr-2">{product.category}</span>
+                  )}
                   Stock: <span className="font-bold text-stone-600">{product.stock}</span> • 
                   Precio: <span className="font-bold text-emerald-600">${product.price.toFixed(2)}</span>
                 </div>
@@ -840,6 +845,7 @@ export default function App() {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer' | null>(null);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const categories = ['all', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
 
@@ -943,6 +949,20 @@ export default function App() {
               className="space-y-6"
             >
               <div className="space-y-4">
+                {/* Search Bar */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Buscar producto..."
+                    className="w-full bg-white border border-stone-200 rounded-xl p-3 pl-10 focus:ring-2 ring-stone-900 font-medium text-sm"
+                  />
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+
                 {/* Category Filter */}
                 <div className="flex gap-2 overflow-x-auto pb-2">
                   {categories.map(cat => (
@@ -964,6 +984,8 @@ export default function App() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {products
                     .filter(p => selectedCategory === 'all' || p.category === selectedCategory)
+                    .filter(p => searchQuery === '' || p.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .sort((a, b) => a.name.localeCompare(b.name))
                     .map(product => (
                       <button
                         key={product.id}
