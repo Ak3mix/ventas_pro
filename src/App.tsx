@@ -13,7 +13,9 @@ import {
   Trash2,
   DollarSign,
   CreditCard,
-  Edit
+  Edit,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as XLSX from 'xlsx';
@@ -75,13 +77,13 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
       onClick={onClick}
       className={cn(
         "flex flex-col items-center gap-1 p-2 transition-all relative",
-        active ? "text-emerald-600" : "text-stone-400"
+        active ? "text-emerald-600 dark:text-emerald-400" : "text-stone-400 dark:text-zinc-500"
       )}
     >
       {active && (
         <motion.div 
           layoutId="nav-active"
-          className="absolute -top-2 w-8 h-1 bg-emerald-600 rounded-full"
+          className="absolute -top-2 w-8 h-1 bg-emerald-600 dark:bg-emerald-400 rounded-full"
         />
       )}
       {icon}
@@ -291,10 +293,10 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
   return (
     <div className="space-y-6 pb-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-black text-stone-900">Inventario</h2>
+        <h2 className="text-2xl font-black text-stone-900 dark:text-stone-100">Inventario</h2>
         <button 
           onClick={() => { setShowAddProduct(true); }}
-          className="bg-stone-900 text-white p-2 rounded-xl shadow-lg active:scale-95 transition-transform shrink-0"
+          className="bg-stone-900 dark:bg-zinc-700 text-white p-2 rounded-xl shadow-lg active:scale-95 transition-transform shrink-0"
         >
           <Plus size={20} />
         </button>
@@ -304,15 +306,15 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
         {products
           .sort((a, b) => a.name.localeCompare(b.name))
           .map(product => (
-          <div key={product.id} className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col gap-4">
+          <div key={product.id} className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-stone-200 dark:border-zinc-800 shadow-sm flex flex-col gap-4">
             <div className="flex items-center gap-4 flex-1">
               <div className="flex-1 min-w-0">
-                <div className="font-black text-stone-900 text-lg leading-tight truncate">{product.name}</div>
-                <div className="text-xs text-stone-400 mt-1">
+                <div className="font-black text-stone-900 dark:text-stone-100 text-lg leading-tight truncate">{product.name}</div>
+                <div className="text-xs text-stone-400 dark:text-zinc-500 mt-1">
                   {product.category && (
-                    <span className="inline-block bg-stone-100 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold mr-2">{product.category}</span>
+                    <span className="inline-block bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold mr-2">{product.category}</span>
                   )}
-                  Stock: <span className="font-bold text-stone-600">{product.stock}</span> • 
+                  Stock: <span className="font-bold text-stone-600 dark:text-zinc-400">{product.stock}</span> • 
                   Precio: <span className="font-bold text-emerald-600">${product.price.toFixed(2)}</span> •
                   Costo: <span className="font-bold text-stone-500">${(product.cost || 0).toFixed(2)}</span>
                 </div>
@@ -321,28 +323,28 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
             <div className="flex gap-2 justify-end">
               <button 
                 onClick={() => { setShowMoveModal(product); setMoveType('entry'); }}
-                className="bg-blue-50 text-blue-600 p-2.5 rounded-xl hover:bg-blue-100 transition-colors flex-1 flex justify-center shrink-0"
+                className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 p-2.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors flex-1 flex justify-center shrink-0"
                 title="Reabastecer"
               >
                 <ArrowUpCircle size={20} />
               </button>
               <button 
                 onClick={() => { setShowMoveModal(product); setMoveType('waste'); }}
-                className="bg-rose-50 text-rose-600 p-2.5 rounded-xl hover:bg-rose-100 transition-colors flex-1 flex justify-center shrink-0"
+                className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 p-2.5 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors flex-1 flex justify-center shrink-0"
                 title="Merma"
               >
                 <ArrowDownCircle size={20} />
               </button>
               <button 
                 onClick={() => { setShowEditProduct(product); }}
-                className="bg-stone-50 text-stone-600 p-2.5 rounded-xl hover:bg-stone-100 transition-colors flex-1 flex justify-center shrink-0"
+                className="bg-stone-50 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 p-2.5 rounded-xl hover:bg-stone-100 dark:hover:bg-zinc-700 transition-colors flex-1 flex justify-center shrink-0"
                 title="Editar"
               >
                 <Edit size={20} />
               </button>
               <button 
                 onClick={() => setShowDeleteConfirm(product)}
-                className="bg-stone-50 text-rose-400 p-2.5 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-colors flex-1 flex justify-center shrink-0"
+                className="bg-stone-50 dark:bg-zinc-800 text-rose-400 p-2.5 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400 transition-colors flex-1 flex justify-center shrink-0"
                 title="Eliminar"
               >
                 <Trash2 size={20} />
@@ -891,8 +893,17 @@ export default function App() {
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
 
   const categories = ['all', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
+  
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
 
   const fetchProducts = async () => {
     try {
@@ -967,16 +978,23 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-stone-100 font-sans text-stone-900 pb-safe">
-      <header className="bg-white border-b border-stone-200 p-4 pt-safe sticky top-0 z-30 shadow-sm">
+    <div className="min-h-screen min-h-[100dvh] bg-stone-100 dark:bg-zinc-950 font-sans text-stone-900 dark:text-stone-100 pb-safe">
+      <header className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 p-4 pt-safe sticky top-0 z-30 shadow-sm">
         <div className="w-full max-w-md mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold tracking-tight text-stone-800">VentasPro</h1>
+          <h1 className="text-xl font-bold tracking-tight text-stone-800 dark:text-stone-100">VentasPro</h1>
           <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-2 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors"
+              title={darkMode ? "Modo claro" : "Modo oscuro"}
+            >
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             <div className={cn(
               "w-3 h-3 rounded-full",
-              activeTab === 'vender' ? "bg-emerald-500" : "bg-stone-300"
+              activeTab === 'vender' ? "bg-emerald-500" : "bg-stone-300 dark:bg-zinc-600"
             )} />
-            <span className="text-xs font-medium uppercase tracking-widest text-stone-500">
+            <span className="text-xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">
               {activeTab}
             </span>
           </div>
@@ -1047,7 +1065,7 @@ export default function App() {
                           <div className="font-black text-stone-900 text-sm leading-tight mb-1 line-clamp-2">{product.name}</div>
                           <div className="text-emerald-600 font-black text-base">${product.price.toFixed(2)}</div>
                           {product.category && (
-                            <div className="text-[8px] uppercase font-bold text-stone-400 mt-1">{product.category}</div>
+                            <div className="text-[8px] uppercase font-bold text-stone-400 dark:text-zinc-500 mt-1">{product.category}</div>
                           )}
                         </div>
                         <div className="flex justify-between items-center mt-2">
@@ -1099,7 +1117,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-2 pb-safe flex justify-around items-center z-40">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 border-t border-stone-200 dark:border-zinc-800 p-2 pb-safe flex justify-around items-center z-40">
         <NavButton active={activeTab === 'vender'} onClick={() => setActiveTab('vender')} icon={<ShoppingCart size={20} />} label="Vender" />
         <NavButton active={activeTab === 'inventario'} onClick={() => setActiveTab('inventario')} icon={<Package size={20} />} label="Inventario" />
         <NavButton active={activeTab === 'reportes'} onClick={() => setActiveTab('reportes')} icon={<ClipboardList size={20} />} label="Cierre" />
