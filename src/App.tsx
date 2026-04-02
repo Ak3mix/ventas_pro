@@ -34,6 +34,7 @@ interface Product {
   id: number;
   name: string;
   price: number;
+  cost: number;
   stock: number;
   initial_stock: number;
   category: string;
@@ -103,6 +104,7 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
   // Form states
   const [formName, setFormName] = useState('');
   const [formPrice, setFormPrice] = useState('');
+  const [formCost, setFormCost] = useState('');
   const [formStock, setFormStock] = useState('');
   const [formCategory, setFormCategory] = useState('');
 
@@ -110,11 +112,13 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
     if (showEditProduct) {
       setFormName(showEditProduct.name);
       setFormPrice(showEditProduct.price.toString());
+      setFormCost((showEditProduct.cost || 0).toString());
       setFormStock(showEditProduct.stock.toString());
       setFormCategory(showEditProduct.category || '');
     } else if (showAddProduct) {
       setFormName('');
       setFormPrice('');
+      setFormCost('');
       setFormStock('');
       setFormCategory('');
     }
@@ -129,6 +133,7 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
     }
     
     const price = parseFloat(formPrice);
+    const cost = parseFloat(formCost) || 0;
     const stock = parseInt(formStock);
 
     if (isNaN(price) || isNaN(stock)) {
@@ -146,6 +151,7 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
     const data = {
       name: formName.trim(),
       price,
+      cost,
       initial_stock: stock,
       category: formCategory.trim()
     };
@@ -192,6 +198,7 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
     }
 
     const price = parseFloat(formPrice);
+    const cost = parseFloat(formCost) || 0;
     const stock = parseInt(formStock);
 
     if (isNaN(price) || isNaN(stock)) {
@@ -203,6 +210,7 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
     const data = {
       name: formName.trim(),
       price,
+      cost,
       stock,
       category: formCategory.trim()
     };
@@ -305,7 +313,8 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
                     <span className="inline-block bg-stone-100 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold mr-2">{product.category}</span>
                   )}
                   Stock: <span className="font-bold text-stone-600">{product.stock}</span> • 
-                  Precio: <span className="font-bold text-emerald-600">${product.price.toFixed(2)}</span>
+                  Precio: <span className="font-bold text-emerald-600">${product.price.toFixed(2)}</span> •
+                  Costo: <span className="font-bold text-stone-500">${(product.cost || 0).toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -387,6 +396,17 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
                       />
                     </div>
                     <div>
+                      <label className="text-[10px] uppercase font-bold text-stone-400 mb-1 block">Costo</label>
+                      <input 
+                        type="number" 
+                        step="0.01" 
+                        value={formCost}
+                        onChange={e => setFormCost(e.target.value)}
+                        placeholder="0"
+                        className="w-full bg-stone-50 border-none rounded-xl p-3 focus:ring-2 ring-stone-900" 
+                      />
+                    </div>
+                    <div>
                       <label className="text-[10px] uppercase font-bold text-stone-400 mb-1 block">Stock Inicial</label>
                       <input 
                         type="number" 
@@ -447,6 +467,17 @@ function InventoryTab({ products, onUpdate }: { products: Product[], onUpdate: (
                         value={formPrice}
                         onChange={e => setFormPrice(e.target.value)}
                         required 
+                        className="w-full bg-stone-50 border-none rounded-xl p-3 focus:ring-2 ring-stone-900" 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-bold text-stone-400 mb-1 block">Costo</label>
+                      <input 
+                        type="number" 
+                        step="0.01" 
+                        value={formCost}
+                        onChange={e => setFormCost(e.target.value)}
+                        placeholder="0"
                         className="w-full bg-stone-50 border-none rounded-xl p-3 focus:ring-2 ring-stone-900" 
                       />
                     </div>
@@ -634,7 +665,7 @@ function ReportsTab({ products, onSessionClose }: { products: Product[], onSessi
         { 'Col1': 'TOTAL VENDIDO', 'Col2': totals.total },
         { 'Col1': '', 'Col2': '' }, // Separator
         { 'Col1': 'DETALLE DE VENTAS POR PRODUCTO', 'Col2': '' },
-        { 'Col1': 'Producto', 'Col2': 'Cant. Vendida', 'Col3': 'Precio Unit.', 'Col4': 'Subtotal', 'Col5': 'Stock Restante' }
+        { 'Col1': 'Producto', 'Col2': 'Cant. Vendida', 'Col3': 'Precio Unit.', 'Col4': 'Costo Unit.', 'Col5': 'Subtotal', 'Col6': 'Costo Total', 'Col7': 'Ganancia Neta', 'Col8': 'Stock Restante' }
       ];
 
       const productInfo = data.movements.reduce((acc: any, m: any) => {
@@ -643,6 +674,7 @@ function ReportsTab({ products, onSessionClose }: { products: Product[], onSessi
             name: m.product_name || 'Producto Desconocido',
             sold: 0,
             price: 0,
+            cost: 0,
             stock: 0
           };
         }
@@ -652,21 +684,28 @@ function ReportsTab({ products, onSessionClose }: { products: Product[], onSessi
         return acc;
       }, {});
 
-      // Try to get prices from current products for those that still exist
+      // Try to get prices and costs from current products for those that still exist
       products.forEach(p => {
         if (productInfo[p.id]) {
           productInfo[p.id].price = p.price;
+          productInfo[p.id].cost = p.cost || 0;
           productInfo[p.id].stock = p.stock;
         }
       });
 
       Object.values(productInfo).forEach((p: any) => {
+        const subtotal = p.price ? p.sold * p.price : 0;
+        const totalCost = p.cost ? p.sold * p.cost : 0;
+        const netProfit = subtotal - totalCost;
         combinedData.push({
           'Col1': p.name,
           'Col2': p.sold,
           'Col3': p.price || '-',
-          'Col4': p.price ? p.sold * p.price : '-',
-          'Col5': p.stock || '-'
+          'Col4': p.cost || '-',
+          'Col5': p.price ? p.sold * p.price : '-',
+          'Col6': p.cost ? p.sold * p.cost : '-',
+          'Col7': netProfit > 0 ? netProfit : '-',
+          'Col8': p.stock || '-'
         });
       });
 
