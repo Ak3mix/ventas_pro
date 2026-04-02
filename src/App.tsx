@@ -893,9 +893,17 @@ export default function App() {
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
-
-  const categories = ['all', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
+  const [darkMode, setDarkMode] = useState(() => {
+    // Check localStorage first, then fall back to system preference
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('darkMode');
+      if (saved !== null) {
+        return saved === 'true';
+      }
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
   
   useEffect(() => {
     if (darkMode) {
@@ -903,6 +911,8 @@ export default function App() {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    // Save user preference to localStorage
+    localStorage.setItem('darkMode', darkMode.toString());
   }, [darkMode]);
 
   const fetchProducts = async () => {

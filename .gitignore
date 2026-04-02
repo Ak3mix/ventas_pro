@@ -1,6 +1,11 @@
-```gitignore
+```
 # Dependencies
 node_modules/
+
+# Build outputs
+dist/
+build/
+target/
 
 # Python
 __pycache__/
@@ -11,23 +16,16 @@ __pycache__/
 env/
 venv/
 .venv/
-.env
-.env.local
-.env.*
-
-# Build outputs
-dist/
-build/
-*.min.js
-*.min.css
-*.bundle.js
+.ENV
+.ENV.local
 
 # Logs
 *.log
 
-# OS generated files
-.DS_Store
-Thumbs.db
+# Environment variables
+.env
+.env.local
+.env.*
 
 # IDE
 .vscode/
@@ -36,24 +34,39 @@ Thumbs.db
 *.swo
 *.tmp
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
+# OS
+.DS_Store
+Thumbs.db
 
 # Testing
+.coverage
+coverage/
+htmlcov/
 .pytest_cache/
 .mypy_cache/
 
-# Compressed files
+# Archives
 *.zip
+*.tar.gz
 *.gz
+*.rar
+*.7z
+
+# Compiled
+*.exe
+*.dll
+*.so
+*.a
+*.o
+*.obj
+*.out
+*.class
+
+# Compressed
 *.tar
 *.tgz
 *.bz2
 *.xz
-*.7z
-*.rar
 *.zst
 *.lz4
 *.lzh
@@ -64,8 +77,4 @@ htmlcov/
 *.Z
 *.lz
 *.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
 ```
